@@ -12,18 +12,29 @@
 2. **Store on IPFS** – The payload is serialised to JSON and pinned to an IPFS node. The resulting CID (Base58) is returned.
 3. **Anchor on Cardano** – A Cardano transaction is built and submitted (via Blockfrost) that carries the IPFS CID together with organisation metadata under the metadata label `1447`.
 
+
+```mermaid
+---
+config:
+  theme: redux
+---
+flowchart LR
+    n1["Kafka Event"] --> n2["Event Parsing"]
+    n2 --> n3["Upload to IPFS"]
+    n3 --> n4["Build Cardano Transaction"]
+```
 > **Note on the REST API:** The `POST /api/v1/publish` endpoint is included purely as a **demo convenience**. It simply forwards the request body onto the Kafka topic, making it easy to trigger the full flow without a real Kafka producer. In the intended target architecture, messages will arrive exclusively via Kafka and the REST endpoint will not be present.
 
 ## Tech Stack
 
-| Component | Technology |
-|-----------|------------|
-| Language  | Java 21    |
-| Framework | Spring Boot 3.x |
-| Messaging | Apache Kafka |
+| Component  | Technology                                                                         |
+|------------|------------------------------------------------------------------------------------|
+| Language   | Java 21                                                                            |
+| Framework  | Spring Boot 3.x                                                                    |
+| Messaging  | Apache Kafka                                                                       |
 | Blockchain | Cardano (via [cardano-client-lib](https://github.com/bloxbean/cardano-client-lib)) |
-| Storage   | IPFS (via [java-ipfs-http-client](https://github.com/ipfs/java-ipfs-http-client)) |
-| API Docs  | SpringDoc OpenAPI (Swagger UI) |
+| Storage    | IPFS (via [java-ipfs-http-client](https://github.com/ipfs/java-ipfs-http-client))  |
+| API Docs   | SpringDoc OpenAPI (Swagger UI)                                                     |
 
 ## Local Infrastructure
 
