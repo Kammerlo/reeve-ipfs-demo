@@ -1,0 +1,50 @@
+server:
+  port: ${SERVER_PORT:9000}
+spring:
+  application:
+    name: reeve-ipfs-publisher
+  kafka:
+    enabled: true
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: reeve-consumer
+      auto-offset-reset: latest
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: '*'
+        fetch:
+          max:
+            bytes: 15728640 # 15MB
+      enable-auto-commit: false
+      auto-commit-interval: 1000
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      retries: 0
+      properties:
+        max:
+          request:
+            size: 15728640 # 15MB
+
+reeve:
+  metdata-label: 1447
+  ipfs:
+    topic: ipfs.demo.topic
+    node: /ip4/192.168.1.2/tcp/5002
+  wallet:
+    mnemonic: ${MNEMONIC:test test test test test test test test test test test test test test test test test test test test test test test sauce}
+  publisher:
+    url: ${BLOCKFROST_URL:http://localhost:8080/api/v1/}
+    project-id: ${BLOCKFROST_KEY:Dummy Key}
+    network: ${NETWORK:testnet}
+  organisation:
+    id: ${ORGANISATION_ID:123456789}
+    name: ${ORGANISATION_NAME:Reeve-Ipfs}
+    currency_id: ${ORGANISATION_CURRENCY_ID:ISO_4217:CHF}
+    country_code: ${ORGANISATION_COUNTRY_CODE:CH}
+    tax_id_number: ${ORGANISATION_TAX_ID_NUMBER:CHE-123.456.789}
+
+springdoc:
+  api-docs.enabled: true

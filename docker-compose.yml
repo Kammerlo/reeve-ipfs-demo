@@ -1,0 +1,105 @@
+x-healthcheck: &healthcheck
+  interval: 2s
+  timeout: 3s
+  retries: 5
+  start_period: 2s
+
+x-python-env: &python-env
+  PYTHONUNBUFFERED: 1
+  PYTHONIOENCODING: UTF-8
+
+services:
+
+  postgres:
+    restart: unless-stopped
+    image: postgres:17
+    hostname: postgres-reeve
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - lob
+
+  kafka:
+    restart: unless-stopped
+    image: apache/kafka:4.1.1
+    networks:
+      - lob
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://localhost:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKA_MESSAGE_MAX_BYTES: 15728640 # 15MB
+      KAFKA_REPLICA_FETCH_MAX_BYTES: 15728640 # 15MB
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    restart: "no"
+    ports:
+      - "19000:9000"
+    networks:
+      - lob
+    environment:
+      KAFKA_BROKERCONNECT: "1@kafka:9092"
+
+  yaci-cli:
+    restart: unless-stopped
+    image: bloxbean/yaci-cli:0.10.6
+    networks:
+      - lob
+    env_file:
+      - ./yaci-config/env
+      - ./yaci-config/node.properties
+    volumes:
+      - ./yaci-config/node.properties:/app/config/node.properties
+      - yaci-data:/clusters
+    ports:
+      - "${YACI_DEVNET_EXPOSED_PORT:-3001}:3001"
+      - "8080:8080"
+    entrypoint: [ "/app/yaci-cli", "create-node", "-o", "--start" ]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "100"
+
+  yaci-viewer:
+    restart: unless-stopped
+    image: bloxbean/yaci-viewer:0.10.6
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./yaci-config/env
+    environment:
+      PUBLIC_INDEXER_BASE_URL: ${PUBLIC_INDEXER_BASE_URL:-http://yaci-cli:8080/api/v1}
+      PUBLIC_INDEXER_WS_URL: ${PUBLIC_INDEXER_WS_URL:-ws://localhost:8081/ws/liveblocks}
+    networks:
+      - lob
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "100"
+
+volumes:
+  postgres-data:
+  keycloak-providers:
+  yaci-data:
+
+networks:
+  lob:
+    name: lob
