@@ -16,20 +16,24 @@ public class PublisherService {
 
     private final Optional<IpfsService> ipfsService;
     private final Optional<ArweaveService> arweaveService;
+    private final Optional<IagonService> iagonService;
     private final CardanoService cardanoService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void publishMessage(PublishMessageRequest request) {
         List<String> ipfsHashes = new ArrayList<>();
         List<String> arweaveHashes = new ArrayList<>();
+        List<String> iagonHashes = new ArrayList<>();
         if(ipfsService.isPresent()) {
             ipfsHashes.add(ipfsService.get().storeInIpfs(convertToJson(request)));
         }
         if(arweaveService.isPresent()) {
             arweaveHashes.add(arweaveService.get().storeInArweave(convertToJson(request)));
         }
-
-        cardanoService.publishHashes(ipfsHashes, arweaveHashes);
+        if(iagonService.isPresent()) {
+            iagonHashes.add(iagonService.get().storeInIagon(convertToJson(request)));
+        }
+        cardanoService.publishHashes(ipfsHashes, arweaveHashes, iagonHashes);
     }
 
     public String convertToJson(Object object) {

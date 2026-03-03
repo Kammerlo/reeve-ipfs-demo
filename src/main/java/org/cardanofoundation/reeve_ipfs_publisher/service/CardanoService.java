@@ -27,7 +27,7 @@ public class CardanoService {
     private final QuickTxBuilder quickTxBuilder;
 
 
-    public void publishHashes(List<String> ipfsHashes, List<String> arweaveHashes) {
+    public void publishHashes(List<String> ipfsHashes, List<String> arweaveHashes, List<String> iagonHashes) {
         MetadataMap map = MetadataBuilder.createMap();
         map.put("org", createOrganisationMetadataMap());
         if(!ipfsHashes.isEmpty()) {
@@ -39,6 +39,11 @@ public class CardanoService {
             MetadataList arweaveHashesList = MetadataBuilder.createList();
             arweaveHashes.stream().forEach(arweaveHashesList::add);
             map.put("arweave", arweaveHashesList);
+        }
+        if(!iagonHashes.isEmpty()) {
+            MetadataList iagonHashesList = MetadataBuilder.createList();
+            iagonHashes.stream().forEach(iagonHashesList::add);
+            map.put("iagon", iagonHashesList);
         }
         Metadata metadata = MetadataBuilder.createMetadata();
         metadata.put(1447, map);

@@ -32,6 +32,10 @@ reeve:
   metdata-label: 1447
   kafka:
     topic: ipfs.demo.topic
+  iagon:
+    enabled: true
+    url: https://gw.iagon.com/api/v2/storage/upload
+    token: DUMMY_TOKEN
   ipfs:
     enabled: true
 #    node: /ip4/192.168.1.2/tcp/5002
