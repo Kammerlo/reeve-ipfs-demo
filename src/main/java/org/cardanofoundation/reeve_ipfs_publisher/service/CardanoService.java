@@ -13,7 +13,6 @@ import com.bloxbean.cardano.client.quicktx.TxResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cardanofoundation.reeve_ipfs_publisher.config.ReeveProperties;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,12 +27,19 @@ public class CardanoService {
     private final QuickTxBuilder quickTxBuilder;
 
 
-    public void publishIpfsHash(List<String> hash) {
+    public void publishHashes(List<String> ipfsHashes, List<String> arweaveHashes) {
         MetadataMap map = MetadataBuilder.createMap();
         map.put("org", createOrganisationMetadataMap());
-        MetadataList ipfsHashesList = MetadataBuilder.createList();
-        hash.stream().forEach(ipfsHashesList::add);
-        map.put("ipfs", ipfsHashesList);
+        if(!ipfsHashes.isEmpty()) {
+            MetadataList ipfsHashesList = MetadataBuilder.createList();
+            ipfsHashes.stream().forEach(ipfsHashesList::add);
+            map.put("ipfs", ipfsHashesList);
+        }
+        if(!arweaveHashes.isEmpty()) {
+            MetadataList arweaveHashesList = MetadataBuilder.createList();
+            arweaveHashes.stream().forEach(arweaveHashesList::add);
+            map.put("arweave", arweaveHashesList);
+        }
         Metadata metadata = MetadataBuilder.createMetadata();
         metadata.put(1447, map);
 

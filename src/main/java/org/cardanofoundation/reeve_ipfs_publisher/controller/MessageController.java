@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MessageController {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    @Value("${reeve.ipfs.topic}")
+    @Value("${reeve.kafka.topic}")
     private String topic;
 
     @PostMapping("/publish")

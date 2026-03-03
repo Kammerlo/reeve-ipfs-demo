@@ -9,8 +9,9 @@
 ## How It Works
 
 1. **Ingest** – A Kafka consumer listens on the configured topic (`reeve.ipfs.topic`) for incoming `PublishMessageRequest` messages.
-2. **Store on IPFS** – The payload is serialised to JSON and pinned to an IPFS node. The resulting CID (Base58) is returned.
-3. **Anchor on Cardano** – A Cardano transaction is built and submitted (via Blockfrost) that carries the IPFS CID together with organisation metadata under the metadata label `1447`.
+2. **Store on IPFS** *(optional)* – When enabled, the payload is serialised to JSON and pinned to an IPFS node. The resulting CID (Base58) is returned.
+3. **Store on Arweave** *(optional)* – When enabled, the payload is serialised to JSON and uploaded to Arweave as a format-2 transaction. The service builds the Merkle data root, deep-hashes the signing payload, signs it with the configured RSA JWK wallet (RSASSA-PSS / SHA-256), POSTs the transaction to the configured gateway and returns the transaction ID.
+4. **Anchor on Cardano** – A Cardano transaction is built and submitted (via Blockfrost) that carries the IPFS CIDs and/or Arweave TX IDs together with organisation metadata under the metadata label `1447`.
 
 
 ```mermaid
@@ -20,8 +21,10 @@ config:
 ---
 flowchart LR
     n1["Kafka Event"] --> n2["Event Parsing"]
-    n2 --> n3["Upload to IPFS"]
-    n3 --> n4["Build Cardano Transaction"]
+    n2 --> n3["Upload to IPFS (optional)"]
+    n2 --> n4["Upload to Arweave (optional)"]
+    n3 --> n5["Build Cardano Transaction"]
+    n4 --> n5
 ```
 > **Note on the REST API:** The `POST /api/v1/publish` endpoint is included purely as a **demo convenience**. It simply forwards the request body onto the Kafka topic, making it easy to trigger the full flow without a real Kafka producer. In the intended target architecture, messages will arrive exclusively via Kafka and the REST endpoint will not be present.
 
@@ -34,6 +37,7 @@ flowchart LR
 | Messaging  | Apache Kafka                                                                       |
 | Blockchain | Cardano (via [cardano-client-lib](https://github.com/bloxbean/cardano-client-lib)) |
 | Storage    | IPFS (via [java-ipfs-http-client](https://github.com/ipfs/java-ipfs-http-client))  |
+| Storage    | Arweave (custom format-2 transaction builder + RSASSA-PSS signing)                 |
 | API Docs   | SpringDoc OpenAPI (Swagger UI)                                                     |
 
 ## Local Infrastructure
@@ -47,6 +51,12 @@ A `docker-compose.yml` is provided to spin up all required dependencies:
 | `yaci-cli`    | Local Cardano devnet node + Blockfrost-compatible API | `8080` |
 | `yaci-viewer` | Cardano devnet block explorer            | `5173`       |
 | `postgres`    | PostgreSQL (used by yaci)                | `5432`       |
+
+> **Arweave (ArLocal):** The default gateway is `http://localhost:1984`. To test Arweave uploads locally, run [ArLocal](https://github.com/textury/arlocal) separately:
+> ```bash
+> npx arlocal
+> ```
+> ArLocal exposes a `/mine` endpoint that is automatically called after each upload to confirm the transaction immediately. This isn't needed in a production environment.
 
 Start all services:
 
@@ -62,7 +72,11 @@ Key configuration properties in `application.yaml` (can be overridden via enviro
 |----------|-------------|---------|
 | Server port | `SERVER_PORT` | `9000` |
 | Kafka bootstrap servers | – | `localhost:9092` |
+| IPFS enabled | – | `false` |
 | IPFS node address | – | `/ip4/192.168.1.2/tcp/5002` |
+| Arweave enabled | – | `true` |
+| Arweave gateway | – | `http://localhost:1984` |
+| Arweave wallet key file | – | `jbang/wallet.json` |
 | Blockfrost URL | `BLOCKFROST_URL` | `http://localhost:8080/api/v1/` |
 | Blockfrost project ID | `BLOCKFROST_KEY` | `Dummy Key` |
 | Cardano network | `NETWORK` | `testnet` |

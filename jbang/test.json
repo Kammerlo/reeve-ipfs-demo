@@ -1,0 +1,38 @@
+{
+    "transaction": [
+        {
+            "id": "stringaabbb",
+            "date": "string",
+            "type": "string",
+            "number": "string",
+            "batchId": "string",
+            "accountingPeriod": "string",
+            "items": [
+                {
+                    "id": "string",
+                    "amount": 0,
+                    "fxRate": 0,
+                    "document": {
+                        "vat": {
+                            "rate": "string",
+                            "custCode": "string"
+                        },
+                        "currency": {
+                            "id": "string",
+                            "custCode": "string"
+                        },
+                        "number": "string"
+                    },
+                    "event": {
+                        "code": "string",
+                        "name": "string"
+                    },
+                    "costCenter": {
+                        "name": "string",
+                        "custCode": "string"
+                    }
+                }
+            ]
+        }
+    ]
+}

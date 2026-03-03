@@ -14,7 +14,7 @@ public class KafkaConsumer {
 
     private final PublisherService publisherService;
 
-    @KafkaListener(topics = "${reeve.ipfs.topic}")
+    @KafkaListener(topics = "${reeve.kafka.topic}")
     public void list(PublishMessageRequest request) {
         log.info("Received message from IPFS: {}", request);
         publisherService.publishMessage(request);

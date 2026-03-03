@@ -30,9 +30,23 @@ spring:
 
 reeve:
   metdata-label: 1447
-  ipfs:
+  kafka:
     topic: ipfs.demo.topic
-    node: /ip4/192.168.1.2/tcp/5002
+  ipfs:
+    enabled: true
+#    node: /ip4/192.168.1.2/tcp/5002
+    blockfrost:
+      enabled: true
+      url: https://ipfs.blockfrost.io/api/v0/ipfs/add
+      project-id: DUMMY_KEY
+    local:
+      enabled: false
+      node: /ip4/192.168.1.2/tcp/5002
+  arweave:
+    enabled: true
+    gateway: http://localhost:1984
+    wallet:
+      key-file: jbang/wallet.json
   wallet:
     mnemonic: ${MNEMONIC:test test test test test test test test test test test test test test test test test test test test test test test sauce}
   publisher:
